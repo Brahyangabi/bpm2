@@ -1,2 +1,2 @@
 // Updated by start-pages-tunnel.sh.
-window.CURRENT_URL = 'https://refurbished-tubes-introduces-null.trycloudflare.com';
+window.CURRENT_URL = 'https://constraints-hunter-short-perspective.trycloudflare.com';
