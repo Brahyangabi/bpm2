@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+  <title>Opening Blockpost server…</title>
+  <script src="currentURL.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var target = window.CURRENT_URL;
+      if (typeof target === 'string' && /^https:\/\/[^\s]+\.trycloudflare\.com\/?$/.test(target)) {
+        window.location.replace(target);
+      } else {
+        document.addEventListener('DOMContentLoaded', function () {
+          document.getElementById('status').textContent = 'No active tunnel URL is configured yet.';
+        });
+      }
+    })();
+  </script>
+</head>
+<body>
+  <p id="status">Opening the active Blockpost server…</p>
+</body>
+</html>
