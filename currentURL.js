@@ -1,2 +1,2 @@
-// Updated and pushed by ../start-pages-tunnel.sh when a new TryCloudflare URL is ready.
-window.CURRENT_URL = '';
+// Updated by start-pages-tunnel.sh.
+window.CURRENT_URL = 'https://refurbished-tubes-introduces-null.trycloudflare.com';
