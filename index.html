@@ -1,26 +1,85 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
-  <title>Opening Blockpost server…</title>
+  <title>Blockpost</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    * { box-sizing: border-box; }
+    body { min-height: 100vh; margin: 0; display: grid; place-items: center; padding: 24px; background: #111318; color: #f4f4f5; }
+    main { width: min(100%, 560px); padding: clamp(28px, 7vw, 52px); border: 1px solid #353842; border-radius: 16px; background: #1a1c23; box-shadow: 0 24px 80px #0006; }
+    h1 { margin: 0 0 22px; font-size: clamp(1.8rem, 7vw, 2.5rem); line-height: 1.1; }
+    p { margin: 0; color: #d1d2d8; font-size: 1.05rem; line-height: 1.65; }
+    #status { color: #aeb1bc; }
+    [hidden] { display: none !important; }
+  </style>
   <script src="currentURL.js"></script>
   <script>
     (function () {
       'use strict';
       var target = window.CURRENT_URL;
-      if (typeof target === 'string' && /^https:\/\/[^\s]+\.trycloudflare\.com\/?$/.test(target)) {
-        window.location.replace(target);
-      } else {
-        document.addEventListener('DOMContentLoaded', function () {
-          document.getElementById('status').textContent = 'No active tunnel URL is configured yet.';
-        });
+      var targetPattern = /^https:\/\/[a-zA-Z0-9-]+\.trycloudflare\.com\/?$/;
+
+      function showError() {
+        document.getElementById('loading').hidden = true;
+        document.getElementById('failure').hidden = false;
+        document.title = 'Server Não Respondeu';
       }
+
+      async function checkAndRedirect() {
+        if (typeof target !== 'string' || !targetPattern.test(target)) {
+          showError();
+          return;
+        }
+        try {
+          var controller = new AbortController();
+          var timeout = setTimeout(function () { controller.abort(); }, 7000);
+          var response = await fetch('/api/health?url=' + encodeURIComponent(target), {
+            cache: 'no-store',
+            signal: controller.signal
+          });
+          clearTimeout(timeout);
+          // Pages Function failures (for example a free-plan limit) fail open:
+          // do not block access when the health checker itself is unavailable.
+          if (!response.ok) {
+            window.location.replace(target);
+            return;
+          }
+          var result = await response.json();
+          if (!result || typeof result.ok !== 'boolean') {
+            window.location.replace(target);
+            return;
+          }
+          if (result.ok === true) {
+            window.location.replace(target);
+            return;
+          }
+        } catch (_) {
+          // Function unavailable, quota-limited, malformed, or timed out:
+          // behave as if the tunnel URL is working.
+          window.location.replace(target);
+          return;
+        }
+        // A successful health-check response explicitly saying the tunnel is
+        // unreachable is different from the checker itself failing.
+        showError();
+      }
+
+      document.addEventListener('DOMContentLoaded', checkAndRedirect);
     })();
   </script>
 </head>
 <body>
-  <p id="status">Opening the active Blockpost server…</p>
+  <main>
+    <section id="loading" aria-live="polite">
+      <p id="status">Verificando se o servidor responde...</p>
+    </section>
+    <section id="failure" hidden role="alert" aria-labelledby="failure-title">
+      <h1 id="failure-title">Server Não Respondeu</h1>
+      <p>Se o server acabou de ligar então aguarde alguns segundos e tente novamente pois o link não atualizou, se você entrou sem avisar o Brahyan então o server pode estar desligado, se não for nenhum desses então o server ta desligado</p>
+    </section>
+  </main>
 </body>
 </html>
