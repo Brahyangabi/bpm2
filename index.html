@@ -8,17 +8,17 @@
   <style>
     :root { color-scheme: dark; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     * { box-sizing: border-box; }
-    body { min-height: 100vh; margin: 0; display: grid; place-items: center; padding: 24px; background: #111318; color: #f4f4f5; }
-    main { width: min(100%, 560px); padding: clamp(28px, 7vw, 52px); border: 1px solid #353842; border-radius: 16px; background: #1a1c23; box-shadow: 0 24px 80px #0006; }
-    h1 { margin: 0 0 22px; font-size: clamp(1.8rem, 7vw, 2.5rem); line-height: 1.1; }
-    p { margin: 0; color: #d1d2d8; font-size: 1.05rem; line-height: 1.65; }
-    #status { display: flex; align-items: center; gap: 12px; color: #aeb1bc; }
-    .spinner { width: 20px; height: 20px; flex: 0 0 auto; border: 2px solid #41444f; border-top-color: #f0a33a; border-radius: 50%; animation: spin .8s linear infinite; }
-    .error-mark { display: grid; width: 46px; height: 46px; margin-bottom: 22px; place-items: center; border-radius: 50%; background: #49272a; color: #ff8585; font-size: 1.65rem; font-weight: 700; }
+    body { min-height: 100vh; margin: 0; display: grid; place-items: center; padding: 24px; background: #000000; color: #FFFFFF; }
+    main { width: min(100%, 560px); padding: clamp(28px, 7vw, 52px); border: 1px solid #FFFFFF; border-radius: 0; background: #000000; box-shadow: none; }
+    h1 { margin: 0 0 22px; font-size: clamp(1.8rem, 7vw, 2.5rem); line-height: 1.1; color: #FFFFFF; }
+    p { margin: 0; color: #FFFFFF; font-size: 1.05rem; line-height: 1.65; }
+    #status { display: flex; align-items: center; gap: 12px; color: #FFFFFF; }
+    .spinner { width: 20px; height: 20px; flex: 0 0 auto; border: 2px solid #FFFFFF; border-top-color: #FFFFFF; border-radius: 50%; animation: spin .8s linear infinite; }
+    .error-mark { display: grid; width: 46px; height: 46px; margin-bottom: 22px; place-items: center; border-radius: 0; background: #000000; color: #FF2020; font-size: 2rem; font-weight: 800; }
     .intro { margin-bottom: 22px; }
-    ol { display: grid; gap: 13px; margin: 0; padding-left: 23px; color: #d1d2d8; line-height: 1.55; }
+    ol { display: grid; gap: 13px; margin: 0; padding-left: 23px; color: #FFFFFF; line-height: 1.55; }
     li { padding-left: 4px; }
-    li::marker { color: #f0a33a; font-weight: 700; }
+    li::marker { color: #FFFFFF; font-weight: 700; }
     @keyframes spin { to { transform: rotate(360deg); } }
     @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
     [hidden] { display: none !important; }
