@@ -1,2 +1,2 @@
 // Updated by start-pages-tunnel.sh.
-window.CURRENT_URL = 'https://happiness-traffic-afford-program.trycloudflare.com';
+window.CURRENT_URL = 'https://knows-meyer-prevent-cookbook.trycloudflare.com';
