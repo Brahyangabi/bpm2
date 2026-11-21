@@ -12,7 +12,15 @@
     main { width: min(100%, 560px); padding: clamp(28px, 7vw, 52px); border: 1px solid #353842; border-radius: 16px; background: #1a1c23; box-shadow: 0 24px 80px #0006; }
     h1 { margin: 0 0 22px; font-size: clamp(1.8rem, 7vw, 2.5rem); line-height: 1.1; }
     p { margin: 0; color: #d1d2d8; font-size: 1.05rem; line-height: 1.65; }
-    #status { color: #aeb1bc; }
+    #status { display: flex; align-items: center; gap: 12px; color: #aeb1bc; }
+    .spinner { width: 20px; height: 20px; flex: 0 0 auto; border: 2px solid #41444f; border-top-color: #f0a33a; border-radius: 50%; animation: spin .8s linear infinite; }
+    .error-mark { display: grid; width: 46px; height: 46px; margin-bottom: 22px; place-items: center; border-radius: 50%; background: #49272a; color: #ff8585; font-size: 1.65rem; font-weight: 700; }
+    .intro { margin-bottom: 22px; }
+    ol { display: grid; gap: 13px; margin: 0; padding-left: 23px; color: #d1d2d8; line-height: 1.55; }
+    li { padding-left: 4px; }
+    li::marker { color: #f0a33a; font-weight: 700; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
     [hidden] { display: none !important; }
   </style>
   <script src="currentURL.js"></script>
@@ -29,6 +37,8 @@
       }
 
       async function checkAndRedirect() {
+        document.getElementById('failure').hidden = true;
+        document.getElementById('loading').hidden = false;
         if (typeof target !== 'string' || !targetPattern.test(target)) {
           showError();
           return;
@@ -74,11 +84,17 @@
 <body>
   <main>
     <section id="loading" aria-live="polite">
-      <p id="status">Verificando se o servidor responde...</p>
+      <p id="status"><span class="spinner" aria-hidden="true"></span>Verificando se o servidor responde…</p>
     </section>
     <section id="failure" hidden role="alert" aria-labelledby="failure-title">
+      <div class="error-mark" aria-hidden="true">!</div>
       <h1 id="failure-title">Server Não Respondeu</h1>
-      <p>Se o server acabou de ligar então aguarde alguns segundos e tente novamente pois o link não atualizou, se você entrou sem avisar o Brahyan então o server pode estar desligado, se não for nenhum desses então o server ta desligado</p>
+      <p class="intro">Não foi possível conectar ao servidor agora. Isso pode acontecer se:</p>
+      <ol>
+        <li>O servidor acabou de ligar. Aguarde alguns segundos e recarregue a página; o link pode ainda estar atualizando.</li>
+        <li>Você entrou sem avisar o Brahyan. Nesse caso, o servidor pode estar desligado.</li>
+        <li>Nenhuma dessas situações se aplica. Então, provavelmente, o servidor está desligado.</li>
+      </ol>
     </section>
   </main>
 </body>
