@@ -1,2 +1,2 @@
-// Updated by start-funnel.sh.
-window.CURRENT_URL = 'https://archbtw.tail14bce7.ts.net/offline';
+// Updated by start-pages-tunnel.sh.
+window.CURRENT_URL = 'https://clerk-ships-rim-finder.trycloudflare.com';
