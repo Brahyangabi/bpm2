@@ -1,2 +1,2 @@
 // Updated by start-pages-tunnel.sh.
-window.CURRENT_URL = 'https://streets-decades-cult-russia.trycloudflare.com/offline';
+window.CURRENT_URL = 'https://contractors-cylinder-pretty-visited.trycloudflare.com';
