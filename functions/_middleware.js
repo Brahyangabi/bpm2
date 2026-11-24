@@ -112,7 +112,9 @@ export async function onRequest(context) {
       });
       upstreamSocket.addEventListener("message", (event) => {
         console.log("Pages WS received upstream frame", typeof event.data === "string" ? event.data.length : event.data && event.data.byteLength);
-        try { clientSocket.send(event.data); }
+        // The accepted server endpoint is the only endpoint the Worker owns;
+        // the pair's client endpoint is transferred to the browser in Response.
+        try { relaySocket.send(event.data); }
         catch (error) { console.error("Pages WS upstream-to-client relay failed", error); closeBoth(upstreamSocket, relaySocket, { code: 1011, reason: "client send failed" }); }
       });
       relaySocket.addEventListener("close", (event) => closeBoth(relaySocket, upstreamSocket, event));
