@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+  <title>Blockpost</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    * { box-sizing: border-box; }
+    body { min-height: 100vh; margin: 0; display: grid; place-items: center; padding: 24px; background: #000000; color: #FFFFFF; }
+    main { width: min(100%, 560px); padding: clamp(28px, 7vw, 52px); border: 1px solid #FFFFFF; border-radius: 0; background: #000000; box-shadow: none; }
+    h1 { margin: 0 0 22px; font-size: clamp(1.8rem, 7vw, 2.5rem); line-height: 1.1; color: #FFFFFF; }
+    p { margin: 0; color: #FFFFFF; font-size: 1.05rem; line-height: 1.65; }
+    #status { display: flex; align-items: center; gap: 12px; color: #FFFFFF; }
+    .spinner { width: 20px; height: 20px; flex: 0 0 auto; border: 2px solid #FFFFFF; border-top-color: #FFFFFF; border-radius: 50%; animation: spin .8s linear infinite; }
+    .error-mark { display: grid; width: 46px; height: 46px; margin-bottom: 22px; place-items: center; border-radius: 0; background: #000000; color: #FF2020; font-size: 2rem; font-weight: 800; }
+    .intro { margin-bottom: 22px; }
+    ol { display: grid; gap: 13px; margin: 0; padding-left: 23px; color: #FFFFFF; line-height: 1.55; }
+    li { padding-left: 4px; }
+    li::marker { color: #FFFFFF; font-weight: 700; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+    [hidden] { display: none !important; }
+  </style>
+  <script src="currentURL.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var target = window.CURRENT_URL;
+      var targetPattern = /^https:\/\/[a-zA-Z0-9-]+\.trycloudflare\.com\/?$/;
+
+      function showError() {
+        document.getElementById('loading').hidden = true;
+        document.getElementById('failure').hidden = false;
+        document.title = 'Server Não Respondeu';
+      }
+
+      async function checkAndRedirect() {
+        document.getElementById('failure').hidden = true;
+        document.getElementById('loading').hidden = false;
+        if (typeof target !== 'string' || !targetPattern.test(target)) {
+          showError();
+          return;
+        }
+        try {
+          var controller = new AbortController();
+          var timeout = setTimeout(function () { controller.abort(); }, 7000);
+          var response = await fetch('/api/health?url=' + encodeURIComponent(target), {
+            cache: 'no-store',
+            signal: controller.signal
+          });
+          clearTimeout(timeout);
+          // Pages Function failures (for example a free-plan limit) fail open:
+          // do not block access when the health checker itself is unavailable.
+          if (!response.ok) {
+            window.location.replace(target);
+            return;
+          }
+          var result = await response.json();
+          if (!result || typeof result.ok !== 'boolean') {
+            window.location.replace(target);
+            return;
+          }
+          if (result.ok === true) {
+            window.location.replace(target);
+            return;
+          }
+        } catch (_) {
+          // Function unavailable, quota-limited, malformed, or timed out:
+          // behave as if the tunnel URL is working.
+          window.location.replace(target);
+          return;
+        }
+        // A successful health-check response explicitly saying the tunnel is
+        // unreachable is different from the checker itself failing.
+        showError();
+      }
+
+      document.addEventListener('DOMContentLoaded', checkAndRedirect);
+    })();
+  </script>
+</head>
+<body>
+  <main>
+    <section id="loading" aria-live="polite">
+      <p id="status"><span class="spinner" aria-hidden="true"></span>Verificando se o servidor responde…</p>
+    </section>
+    <section id="failure" hidden role="alert" aria-labelledby="failure-title">
+      <div class="error-mark" aria-hidden="true">!</div>
+      <h1 id="failure-title">Server Não Respondeu</h1>
+      <p class="intro">Não foi possível conectar ao servidor agora. Isso pode acontecer se:</p>
+      <ol>
+        <li>O servidor acabou de ligar. Aguarde alguns segundos e recarregue a página; o link pode ainda estar atualizando.</li>
+        <li>Você entrou sem avisar o Brahyan. Nesse caso, o servidor pode estar desligado.</li>
+        <li>Nenhuma dessas situações se aplica. Então, provavelmente, o servidor está desligado.</li>
+      </ol>
+    </section>
+  </main>
+</body>
+</html>

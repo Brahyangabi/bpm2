@@ -73,15 +73,49 @@ export async function onRequest(context) {
         method: "GET",
         headers: cleanHeaders(request.headers, tunnelOrigin, { websocket: true }),
       });
-      const socket = upstream.webSocket;
-      if (!socket) {
+      const upstreamSocket = upstream.webSocket;
+      if (!upstreamSocket) {
         return new Response("Tunnel upstream did not accept WebSocket", {
           status: 502,
           headers: { "Cache-Control": "no-store" },
         });
       }
-      socket.accept();
-      return new Response(null, { status: 101, webSocket: socket });
+
+      // The outbound socket is not the browser's socket. Accept a client-side
+      // pair and relay frames in both directions; returning upstreamSocket
+      // directly makes the handshake appear open but leaves game packets unbridged.
+      const pair = new WebSocketPair();
+      const clientSocket = pair[0];
+      const relaySocket = pair[1];
+      clientSocket.accept();
+      upstreamSocket.accept();
+
+      let closing = false;
+      const closeBoth = (source, other, event) => {
+        if (closing) return;
+        closing = true;
+        try {
+          if (other.readyState === WebSocket.OPEN || other.readyState === WebSocket.CONNECTING) {
+            other.close(event.code || 1000, String(event.reason || "").slice(0, 120));
+          }
+        } catch (_) {}
+        try {
+          if (source.readyState === WebSocket.OPEN || source.readyState === WebSocket.CONNECTING) {
+            source.close(event.code || 1000, String(event.reason || "").slice(0, 120));
+          }
+        } catch (_) {}
+      };
+      relaySocket.addEventListener("message", (event) => {
+        if (upstreamSocket.readyState === WebSocket.OPEN) upstreamSocket.send(event.data);
+      });
+      upstreamSocket.addEventListener("message", (event) => {
+        if (clientSocket.readyState === WebSocket.OPEN) clientSocket.send(event.data);
+      });
+      relaySocket.addEventListener("close", (event) => closeBoth(relaySocket, upstreamSocket, event));
+      upstreamSocket.addEventListener("close", (event) => closeBoth(upstreamSocket, relaySocket, event));
+      relaySocket.addEventListener("error", () => closeBoth(relaySocket, upstreamSocket, { code: 1011, reason: "client websocket error" }));
+      upstreamSocket.addEventListener("error", () => closeBoth(upstreamSocket, relaySocket, { code: 1011, reason: "upstream websocket error" }));
+      return new Response(null, { status: 101, webSocket: clientSocket });
     }
 
     const headers = cleanHeaders(request.headers, tunnelOrigin);
