@@ -87,7 +87,10 @@ export async function onRequest(context) {
       const pair = new WebSocketPair();
       const clientSocket = pair[0];
       const relaySocket = pair[1];
-      clientSocket.accept();
+      // Only accept the server end of the pair. Cloudflare transfers the client
+      // end to the browser in the 101 response; accepting it inside the Worker
+      // prevents that endpoint from behaving as the remote client socket.
+      relaySocket.accept();
       upstreamSocket.accept();
 
       let closing = false;
