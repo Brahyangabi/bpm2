@@ -82,46 +82,12 @@ export async function onRequest(context) {
         });
       }
 
-      // The outbound socket is not the browser's socket. Accept a client-side
-      // pair and relay frames in both directions; returning upstreamSocket
-      // directly makes the handshake appear open but leaves game packets unbridged.
-      const pair = new WebSocketPair();
-      const clientSocket = pair[0];
-      const relaySocket = pair[1];
-      // Only accept the server end of the pair. Cloudflare transfers the client
-      // end to the browser in the 101 response; accepting it inside the Worker
-      // prevents that endpoint from behaving as the remote client socket.
-      relaySocket.accept();
-      // Outbound WebSockets returned by Workers fetch() must also be accepted
-      // before their events are delivered and send() is usable in the relay.
-      upstreamSocket.accept();
-
-      let closing = false;
-      const closeBoth = (source, other, event) => {
-        if (closing) return;
-        closing = true;
-        const code = Number.isInteger(event.code) && event.code >= 1000 && event.code < 5000 ? event.code : 1000;
-        const reason = String(event.reason || "").slice(0, 120);
-        try { other.close(code, reason); } catch (_) {}
-        try { source.close(code, reason); } catch (_) {}
-      };
-      relaySocket.addEventListener("message", (event) => {
-        console.log("Pages WS received client frame", typeof event.data === "string" ? event.data.length : event.data && event.data.byteLength);
-        try { upstreamSocket.send(event.data); }
-        catch (error) { console.error("Pages WS client-to-upstream relay failed", error); closeBoth(relaySocket, upstreamSocket, { code: 1011, reason: "upstream send failed" }); }
-      });
-      upstreamSocket.addEventListener("message", (event) => {
-        console.log("Pages WS received upstream frame", typeof event.data === "string" ? event.data.length : event.data && event.data.byteLength);
-        // The accepted server endpoint is the only endpoint the Worker owns;
-        // the pair's client endpoint is transferred to the browser in Response.
-        try { relaySocket.send(event.data); }
-        catch (error) { console.error("Pages WS upstream-to-client relay failed", error); closeBoth(upstreamSocket, relaySocket, { code: 1011, reason: "client send failed" }); }
-      });
-      relaySocket.addEventListener("close", (event) => closeBoth(relaySocket, upstreamSocket, event));
-      upstreamSocket.addEventListener("close", (event) => closeBoth(upstreamSocket, relaySocket, event));
-      relaySocket.addEventListener("error", () => closeBoth(relaySocket, upstreamSocket, { code: 1011, reason: "client websocket error" }));
-      upstreamSocket.addEventListener("error", () => closeBoth(upstreamSocket, relaySocket, { code: 1011, reason: "upstream websocket error" }));
-      return new Response(null, { status: 101, webSocket: clientSocket });
+      // This is a transparent one-to-one proxy: transfer the accepted upstream
+      // socket directly to the browser. Do not call accept() here; accepting it
+      // makes the Worker own the socket, so frames then require a second relay
+      // endpoint and can be silently stranded. The initial implementation did
+      // exactly that, which explains the 101 handshake followed by no reply.
+      return new Response(null, { status: 101, webSocket: upstreamSocket });
     }
 
     const headers = cleanHeaders(request.headers, tunnelOrigin);
