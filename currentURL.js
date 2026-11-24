@@ -1,2 +1,2 @@
 // Updated by start-pages-tunnel.sh.
-window.CURRENT_URL = 'https://expression-library-calculate-invalid.trycloudflare.com/offline';
+window.CURRENT_URL = 'https://tracy-foot-colorado-screenshot.trycloudflare.com';
