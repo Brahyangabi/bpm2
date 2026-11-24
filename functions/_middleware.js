@@ -74,6 +74,7 @@ export async function onRequest(context) {
         headers: cleanHeaders(request.headers, tunnelOrigin, { websocket: true }),
       });
       const upstreamSocket = upstream.webSocket;
+      console.log("Pages WS upstream handshake", upstream.status, Boolean(upstreamSocket));
       if (!upstreamSocket) {
         return new Response("Tunnel upstream did not accept WebSocket", {
           status: 502,
@@ -91,28 +92,27 @@ export async function onRequest(context) {
       // end to the browser in the 101 response; accepting it inside the Worker
       // prevents that endpoint from behaving as the remote client socket.
       relaySocket.accept();
-      upstreamSocket.accept();
+      // fetch()'s response.webSocket is an already-established client socket;
+      // accept() is only for the server side of a WebSocketPair.
 
       let closing = false;
       const closeBoth = (source, other, event) => {
         if (closing) return;
         closing = true;
-        try {
-          if (other.readyState === WebSocket.OPEN || other.readyState === WebSocket.CONNECTING) {
-            other.close(event.code || 1000, String(event.reason || "").slice(0, 120));
-          }
-        } catch (_) {}
-        try {
-          if (source.readyState === WebSocket.OPEN || source.readyState === WebSocket.CONNECTING) {
-            source.close(event.code || 1000, String(event.reason || "").slice(0, 120));
-          }
-        } catch (_) {}
+        const code = Number.isInteger(event.code) && event.code >= 1000 && event.code < 5000 ? event.code : 1000;
+        const reason = String(event.reason || "").slice(0, 120);
+        try { other.close(code, reason); } catch (_) {}
+        try { source.close(code, reason); } catch (_) {}
       };
       relaySocket.addEventListener("message", (event) => {
-        if (upstreamSocket.readyState === WebSocket.OPEN) upstreamSocket.send(event.data);
+        console.log("Pages WS received client frame", typeof event.data === "string" ? event.data.length : event.data && event.data.byteLength);
+        try { upstreamSocket.send(event.data); }
+        catch (error) { console.error("Pages WS client-to-upstream relay failed", error); closeBoth(relaySocket, upstreamSocket, { code: 1011, reason: "upstream send failed" }); }
       });
       upstreamSocket.addEventListener("message", (event) => {
-        if (clientSocket.readyState === WebSocket.OPEN) clientSocket.send(event.data);
+        console.log("Pages WS received upstream frame", typeof event.data === "string" ? event.data.length : event.data && event.data.byteLength);
+        try { clientSocket.send(event.data); }
+        catch (error) { console.error("Pages WS upstream-to-client relay failed", error); closeBoth(upstreamSocket, relaySocket, { code: 1011, reason: "client send failed" }); }
       });
       relaySocket.addEventListener("close", (event) => closeBoth(relaySocket, upstreamSocket, event));
       upstreamSocket.addEventListener("close", (event) => closeBoth(upstreamSocket, relaySocket, event));
