@@ -1,2 +1,2 @@
 // Updated by start-pages-tunnel.sh.
-window.CURRENT_URL = 'https://maintenance-receive-contents-difficulties.trycloudflare.com/offline';
+window.CURRENT_URL = 'https://face-may-english-appearance.trycloudflare.com';
