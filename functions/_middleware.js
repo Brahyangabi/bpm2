@@ -92,8 +92,9 @@ export async function onRequest(context) {
       // end to the browser in the 101 response; accepting it inside the Worker
       // prevents that endpoint from behaving as the remote client socket.
       relaySocket.accept();
-      // fetch()'s response.webSocket is an already-established client socket;
-      // accept() is only for the server side of a WebSocketPair.
+      // Outbound WebSockets returned by Workers fetch() must also be accepted
+      // before their events are delivered and send() is usable in the relay.
+      upstreamSocket.accept();
 
       let closing = false;
       const closeBoth = (source, other, event) => {
