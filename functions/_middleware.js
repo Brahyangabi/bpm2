@@ -1,6 +1,6 @@
 // Cloudflare Pages reverse proxy for the BPM2 server.
 // The launcher updates ORIGIN whenever the tunnel hostname changes.
-const ORIGIN = "https://chrome-virginia-piece-discipline.trycloudflare.com";
+const ORIGIN = "";
 const ORIGIN_RE = /^https:\/\/(?:[a-z0-9-]+\.trycloudflare\.com|[a-z0-9-]+\.[a-z0-9-]+\.ts\.net)$/i;
 
 const HOP_BY_HOP = new Set([
@@ -27,10 +27,14 @@ function cleanHeaders(source, origin, { websocket = false } = {}) {
   for (const [name, value] of source) {
     const lower = name.toLowerCase();
     if (HOP_BY_HOP.has(lower)) continue;
-    if (websocket && ["sec-websocket-key", "sec-websocket-version", "sec-websocket-extensions"].includes(lower)) continue;
     headers.set(name, value);
   }
-  if (websocket) headers.set("Upgrade", "websocket");
+  if (websocket) {
+    // Forward the browser's handshake unchanged; the game relay validates the
+    // key, version, and Connection: Upgrade fields before it accepts /ws/<port>.
+    headers.set("Connection", "Upgrade");
+    headers.set("Upgrade", "websocket");
+  }
   // The origin server sees its own host/origin, while the visitor stays on Pages.
   if (source.has("Origin")) headers.set("Origin", origin);
   const referer = source.get("Referer");
