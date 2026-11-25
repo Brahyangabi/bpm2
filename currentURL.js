@@ -1,2 +1,2 @@
 // Updated by start-pages-tunnel.sh.
-window.CURRENT_URL = 'https://method-tops-sleeps-influence.trycloudflare.com/offline';
+window.CURRENT_URL = 'https://commodity-experienced-oklahoma-procedures.trycloudflare.com';
