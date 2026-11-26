@@ -1,2 +1,2 @@
 // Updated by start-pages-tunnel.sh.
-window.CURRENT_URL = 'https://position-notification-idaho-not.trycloudflare.com/offline';
+window.CURRENT_URL = 'https://associates-loved-acquisition-timothy.trycloudflare.com';
