@@ -1,2 +1,2 @@
 // Updated by start-pages-tunnel.sh.
-window.CURRENT_URL = 'https://commons-bonds-ability-reviewed.trycloudflare.com/offline';
+window.CURRENT_URL = 'https://enjoying-mapping-palmer-webshots.trycloudflare.com';
