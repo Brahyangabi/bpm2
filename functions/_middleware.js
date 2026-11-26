@@ -1,6 +1,6 @@
 // Cloudflare Pages reverse proxy for the BPM2 server.
 // The launcher updates ORIGIN whenever the tunnel hostname changes.
-const ORIGIN = "https://associates-loved-acquisition-timothy.trycloudflare.com";
+const ORIGIN = "";
 const ORIGIN_RE = /^https:\/\/(?:[a-z0-9-]+\.trycloudflare\.com|[a-z0-9-]+\.[a-z0-9-]+\.ts\.net)$/i;
 
 const HOP_BY_HOP = new Set([
