@@ -1,2 +1,2 @@
 // Updated by start-pages-tunnel.sh.
-window.CURRENT_URL = 'https://truth-eva-recall-forms.trycloudflare.com/offline';
+window.CURRENT_URL = 'https://rights-meal-useful-collectors.trycloudflare.com';
